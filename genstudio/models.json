@@ -1,92 +1,881 @@
 {
-  "_help": "Model catalog. mode: t2i (text-to-image), edit (image editing), t2v (text-to-video), i2v (image-to-video). image_param = name of the image input field, image_list = true if it takes a list. Options always start with '(default)', which sends nothing so the model uses its own default. est_usd is a rough cost per run at default settings. Anything else goes in the Advanced JSON box. Find model IDs at fal.ai/models and replicate.com/explore.",
-  "models": [
-    {"provider": "fal", "mode": "t2i", "id": "google/nano-banana-2.1", "name": "Nano Banana 2.1", "est_usd": 0.08,
-     "options": [{"key": "aspect_ratio", "label": "Aspect", "choices": ["1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3", "21:9"]},
-                 {"key": "num_images", "label": "Count", "choices": [1, 2, 3, 4]}]},
-    {"provider": "fal", "mode": "t2i", "id": "fal-ai/nano-banana-2", "name": "Nano Banana 2", "est_usd": 0.08,
-     "options": [{"key": "aspect_ratio", "label": "Aspect", "choices": ["1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3", "21:9"]},
-                 {"key": "num_images", "label": "Count", "choices": [1, 2, 3, 4]}]},
-    {"provider": "fal", "mode": "t2i", "id": "fal-ai/nano-banana-pro", "name": "Nano Banana Pro", "est_usd": 0.15,
-     "options": [{"key": "aspect_ratio", "label": "Aspect", "choices": ["1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3", "21:9"]},
-                 {"key": "num_images", "label": "Count", "choices": [1, 2, 3, 4]}]},
-    {"provider": "fal", "mode": "t2i", "id": "fal-ai/flux-2-pro", "name": "FLUX.2 Pro", "est_usd": 0.05,
-     "options": [{"key": "image_size", "label": "Size", "choices": ["square_hd", "landscape_16_9", "portrait_16_9", "landscape_4_3", "portrait_4_3"]}]},
-    {"provider": "fal", "mode": "t2i", "id": "fal-ai/flux/schnell", "name": "FLUX.1 Schnell (cheap/fast)", "est_usd": 0.003,
-     "options": [{"key": "image_size", "label": "Size", "choices": ["square_hd", "landscape_16_9", "portrait_16_9", "landscape_4_3", "portrait_4_3"]},
-                 {"key": "num_images", "label": "Count", "choices": [1, 2, 3, 4]}]},
-    {"provider": "fal", "mode": "t2i", "id": "bytedance/seedream/v4.5/text-to-image", "name": "Seedream 4.5", "est_usd": 0.04, "options": []},
-    {"provider": "fal", "mode": "t2i", "id": "openai/gpt-image-2", "name": "GPT Image 2 (via fal)", "est_usd": 0.07, "options": []},
-
-    {"provider": "fal", "mode": "edit", "id": "fal-ai/nano-banana-2/edit", "name": "Nano Banana 2 Edit", "image_param": "image_urls", "image_list": true, "est_usd": 0.08,
-     "options": [{"key": "num_images", "label": "Count", "choices": [1, 2, 3, 4]}]},
-    {"provider": "fal", "mode": "edit", "id": "fal-ai/nano-banana-pro/edit", "name": "Nano Banana Pro Edit", "image_param": "image_urls", "image_list": true, "est_usd": 0.15,
-     "options": [{"key": "num_images", "label": "Count", "choices": [1, 2, 3, 4]}]},
-    {"provider": "fal", "mode": "edit", "id": "fal-ai/flux-2-pro/edit", "name": "FLUX.2 Pro Edit", "image_param": "image_urls", "image_list": true, "est_usd": 0.05, "options": []},
-    {"provider": "fal", "mode": "edit", "id": "bytedance/seedream/v4.5/edit", "name": "Seedream 4.5 Edit", "image_param": "image_urls", "image_list": true, "est_usd": 0.04, "options": []},
-
-    {"provider": "fal", "mode": "t2v", "id": "fal-ai/veo3.1", "name": "Veo 3.1 (audio)", "est_usd": 3.2,
-     "options": [{"key": "aspect_ratio", "label": "Aspect", "choices": ["16:9", "9:16"]},
-                 {"key": "duration", "label": "Length", "choices": ["4s", "6s", "8s"]},
-                 {"key": "generate_audio", "label": "Audio", "choices": [true, false]}]},
-    {"provider": "fal", "mode": "t2v", "id": "fal-ai/kling-video/v3/pro/text-to-video", "name": "Kling 3.0 Pro", "est_usd": 1.2,
-     "options": [{"key": "aspect_ratio", "label": "Aspect", "choices": ["16:9", "9:16", "1:1"]},
-                 {"key": "duration", "label": "Length", "choices": ["5", "10"]}]},
-    {"provider": "fal", "mode": "t2v", "id": "fal-ai/kling-video/v2.5-turbo/pro/text-to-video", "name": "Kling 2.5 Turbo Pro (cheaper)", "est_usd": 0.35,
-     "options": [{"key": "aspect_ratio", "label": "Aspect", "choices": ["16:9", "9:16", "1:1"]},
-                 {"key": "duration", "label": "Length", "choices": ["5", "10"]}]},
-    {"provider": "fal", "mode": "t2v", "id": "bytedance/seedance-2.0/text-to-video", "name": "Seedance 2.0", "est_usd": 1.5,
-     "options": [{"key": "aspect_ratio", "label": "Aspect", "choices": ["16:9", "9:16", "1:1"]}]},
-
-    {"provider": "fal", "mode": "i2v", "id": "fal-ai/kling-video/v3/pro/image-to-video", "name": "Kling 3.0 Pro", "image_param": "start_image_url", "est_usd": 1.2,
-     "options": [{"key": "duration", "label": "Length", "choices": ["5", "10"]}]},
-    {"provider": "fal", "mode": "i2v", "id": "fal-ai/kling-video/v3/turbo/pro/image-to-video", "name": "Kling 3.0 Turbo Pro", "image_param": "image_url", "est_usd": 0.6,
-     "options": [{"key": "duration", "label": "Length", "choices": ["5", "10"]}]},
-    {"provider": "fal", "mode": "i2v", "id": "fal-ai/veo3.1/image-to-video", "name": "Veo 3.1 (audio)", "image_param": "image_url", "est_usd": 3.2,
-     "options": [{"key": "duration", "label": "Length", "choices": ["4s", "6s", "8s"]},
-                 {"key": "generate_audio", "label": "Audio", "choices": [true, false]}]},
-    {"provider": "fal", "mode": "i2v", "id": "bytedance/seedance-2.0/image-to-video", "name": "Seedance 2.0", "image_param": "image_url", "est_usd": 1.5, "options": []},
-
-    {"provider": "replicate", "mode": "t2i", "id": "black-forest-labs/flux-schnell", "name": "FLUX Schnell", "est_usd": 0.003,
-     "options": [{"key": "aspect_ratio", "label": "Aspect", "choices": ["1:1", "16:9", "9:16", "4:3", "3:4"]},
-                 {"key": "num_outputs", "label": "Count", "choices": [1, 2, 3, 4]}]},
-    {"provider": "replicate", "mode": "t2i", "id": "black-forest-labs/flux-1.1-pro", "name": "FLUX 1.1 Pro", "est_usd": 0.04,
-     "options": [{"key": "aspect_ratio", "label": "Aspect", "choices": ["1:1", "16:9", "9:16", "4:3", "3:4"]}]},
-    {"provider": "replicate", "mode": "t2i", "id": "google/nano-banana-pro", "name": "Nano Banana Pro", "est_usd": 0.15,
-     "options": [{"key": "aspect_ratio", "label": "Aspect", "choices": ["1:1", "16:9", "9:16", "4:3", "3:4"]}]},
-    {"provider": "replicate", "mode": "edit", "id": "google/nano-banana-pro", "name": "Nano Banana Pro Edit", "image_param": "image_input", "image_list": true, "est_usd": 0.15, "options": []},
-    {"provider": "replicate", "mode": "t2v", "id": "google/veo-3.1", "name": "Veo 3.1", "est_usd": 3.2,
-     "options": [{"key": "aspect_ratio", "label": "Aspect", "choices": ["16:9", "9:16"]}]},
-    {"provider": "replicate", "mode": "i2v", "id": "google/veo-3.1", "name": "Veo 3.1", "image_param": "image", "est_usd": 3.2, "options": []},
-
-    {"provider": "openai", "mode": "t2i", "id": "gpt-image-2", "name": "GPT Image 2", "est_usd": 0.07,
-     "options": [{"key": "size", "label": "Size", "choices": ["1024x1024", "1536x1024", "1024x1536", "auto"]},
-                 {"key": "quality", "label": "Quality", "choices": ["low", "medium", "high", "auto"]},
-                 {"key": "n", "label": "Count", "choices": [1, 2, 3, 4]}]},
-    {"provider": "openai", "mode": "t2i", "id": "gpt-image-1.5", "name": "GPT Image 1.5", "est_usd": 0.05,
-     "options": [{"key": "size", "label": "Size", "choices": ["1024x1024", "1536x1024", "1024x1536", "auto"]},
-                 {"key": "quality", "label": "Quality", "choices": ["low", "medium", "high", "auto"]},
-                 {"key": "background", "label": "Background", "choices": ["transparent", "opaque", "auto"]},
-                 {"key": "n", "label": "Count", "choices": [1, 2, 3, 4]}]},
-    {"provider": "openai", "mode": "edit", "id": "gpt-image-2", "name": "GPT Image 2 Edit", "est_usd": 0.07,
-     "options": [{"key": "size", "label": "Size", "choices": ["1024x1024", "1536x1024", "1024x1536", "auto"]},
-                 {"key": "quality", "label": "Quality", "choices": ["low", "medium", "high", "auto"]}]},
-
-    {"provider": "google", "mode": "t2i", "id": "gemini-nano-banana-2.1", "name": "Nano Banana 2.1", "est_usd": 0.07,
-     "options": [{"key": "aspectRatio", "label": "Aspect", "choices": ["1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3", "21:9"]},
-                 {"key": "imageSize", "label": "Resolution", "choices": ["1K", "2K", "4K"]}]},
-    {"provider": "google", "mode": "t2i", "id": "gemini-3-pro-image", "name": "Nano Banana Pro", "est_usd": 0.14,
-     "options": [{"key": "aspectRatio", "label": "Aspect", "choices": ["1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3", "21:9"]},
-                 {"key": "imageSize", "label": "Resolution", "choices": ["1K", "2K", "4K"]}]},
-    {"provider": "google", "mode": "edit", "id": "gemini-nano-banana-2.1", "name": "Nano Banana 2.1 Edit", "est_usd": 0.07,
-     "options": [{"key": "aspectRatio", "label": "Aspect", "choices": ["1:1", "16:9", "9:16", "4:3", "3:4"]}]},
-    {"provider": "google", "mode": "edit", "id": "gemini-3-pro-image", "name": "Nano Banana Pro Edit", "est_usd": 0.14, "options": []},
-    {"provider": "google", "mode": "t2v", "id": "veo-3.1-generate-preview", "name": "Veo 3.1", "est_usd": 3.2,
-     "options": [{"key": "aspectRatio", "label": "Aspect", "choices": ["16:9", "9:16"]},
-                 {"key": "resolution", "label": "Resolution", "choices": ["720p", "1080p"]}]},
-    {"provider": "google", "mode": "t2v", "id": "veo-3.1-fast-generate-preview", "name": "Veo 3.1 Fast", "est_usd": 1.2,
-     "options": [{"key": "aspectRatio", "label": "Aspect", "choices": ["16:9", "9:16"]}]},
-    {"provider": "google", "mode": "i2v", "id": "veo-3.1-generate-preview", "name": "Veo 3.1", "est_usd": 3.2,
-     "options": [{"key": "aspectRatio", "label": "Aspect", "choices": ["16:9", "9:16"]}]}
-  ]
+ "_help": "Model catalog. mode: t2i (text-to-image), edit (image editing), t2v (text-to-video), i2v (image-to-video). image_param = name of the image input field, image_list = true if it takes a list. Options always start with '(default)', which sends nothing so the model uses its own default. est_usd is a rough cost per run at default settings. Anything else goes in the Advanced JSON box. Find model IDs at fal.ai/models and replicate.com/explore. 'safety' marks models whose API exposes a safety-checker switch; the app's checkbox sends that value.",
+ "models": [
+  {
+   "provider": "fal",
+   "mode": "t2i",
+   "id": "google/nano-banana-2.1",
+   "name": "Nano Banana 2.1",
+   "est_usd": 0.08,
+   "options": [
+    {
+     "key": "aspect_ratio",
+     "label": "Aspect",
+     "choices": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "4:3",
+      "3:4",
+      "3:2",
+      "2:3",
+      "21:9"
+     ]
+    },
+    {
+     "key": "num_images",
+     "label": "Count",
+     "choices": [
+      1,
+      2,
+      3,
+      4
+     ]
+    }
+   ]
+  },
+  {
+   "provider": "fal",
+   "mode": "t2i",
+   "id": "fal-ai/nano-banana-2",
+   "name": "Nano Banana 2",
+   "est_usd": 0.08,
+   "options": [
+    {
+     "key": "aspect_ratio",
+     "label": "Aspect",
+     "choices": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "4:3",
+      "3:4",
+      "3:2",
+      "2:3",
+      "21:9"
+     ]
+    },
+    {
+     "key": "num_images",
+     "label": "Count",
+     "choices": [
+      1,
+      2,
+      3,
+      4
+     ]
+    }
+   ]
+  },
+  {
+   "provider": "fal",
+   "mode": "t2i",
+   "id": "fal-ai/nano-banana-pro",
+   "name": "Nano Banana Pro",
+   "est_usd": 0.15,
+   "options": [
+    {
+     "key": "aspect_ratio",
+     "label": "Aspect",
+     "choices": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "4:3",
+      "3:4",
+      "3:2",
+      "2:3",
+      "21:9"
+     ]
+    },
+    {
+     "key": "num_images",
+     "label": "Count",
+     "choices": [
+      1,
+      2,
+      3,
+      4
+     ]
+    }
+   ]
+  },
+  {
+   "provider": "fal",
+   "mode": "t2i",
+   "id": "fal-ai/flux-2-pro",
+   "name": "FLUX.2 Pro",
+   "est_usd": 0.05,
+   "options": [
+    {
+     "key": "image_size",
+     "label": "Size",
+     "choices": [
+      "square_hd",
+      "landscape_16_9",
+      "portrait_16_9",
+      "landscape_4_3",
+      "portrait_4_3"
+     ]
+    }
+   ]
+  },
+  {
+   "provider": "fal",
+   "mode": "t2i",
+   "id": "fal-ai/flux/dev",
+   "name": "FLUX.1 Dev (open weights)",
+   "est_usd": 0.025,
+   "safety": {
+    "key": "enable_safety_checker",
+    "value": false
+   },
+   "options": [
+    {
+     "key": "image_size",
+     "label": "Size",
+     "choices": [
+      "square_hd",
+      "landscape_16_9",
+      "portrait_16_9",
+      "landscape_4_3",
+      "portrait_4_3"
+     ]
+    },
+    {
+     "key": "num_images",
+     "label": "Count",
+     "choices": [
+      1,
+      2,
+      3,
+      4
+     ]
+    }
+   ]
+  },
+  {
+   "provider": "fal",
+   "mode": "t2i",
+   "id": "fal-ai/flux/schnell",
+   "name": "FLUX.1 Schnell (cheap/fast)",
+   "est_usd": 0.003,
+   "options": [
+    {
+     "key": "image_size",
+     "label": "Size",
+     "choices": [
+      "square_hd",
+      "landscape_16_9",
+      "portrait_16_9",
+      "landscape_4_3",
+      "portrait_4_3"
+     ]
+    },
+    {
+     "key": "num_images",
+     "label": "Count",
+     "choices": [
+      1,
+      2,
+      3,
+      4
+     ]
+    }
+   ],
+   "safety": {
+    "key": "enable_safety_checker",
+    "value": false
+   }
+  },
+  {
+   "provider": "fal",
+   "mode": "t2i",
+   "id": "fal-ai/fast-sdxl",
+   "name": "SDXL (open weights, tag-style prompts)",
+   "est_usd": 0.003,
+   "safety": {
+    "key": "enable_safety_checker",
+    "value": false
+   },
+   "options": [
+    {
+     "key": "image_size",
+     "label": "Size",
+     "choices": [
+      "square_hd",
+      "landscape_16_9",
+      "portrait_16_9",
+      "landscape_4_3",
+      "portrait_4_3"
+     ]
+    },
+    {
+     "key": "num_images",
+     "label": "Count",
+     "choices": [
+      1,
+      2,
+      3,
+      4
+     ]
+    }
+   ]
+  },
+  {
+   "provider": "fal",
+   "mode": "t2i",
+   "id": "bytedance/seedream/v4.5/text-to-image",
+   "name": "Seedream 4.5",
+   "est_usd": 0.04,
+   "options": []
+  },
+  {
+   "provider": "fal",
+   "mode": "t2i",
+   "id": "openai/gpt-image-2",
+   "name": "GPT Image 2 (via fal)",
+   "est_usd": 0.07,
+   "options": []
+  },
+  {
+   "provider": "fal",
+   "mode": "edit",
+   "id": "fal-ai/nano-banana-2/edit",
+   "name": "Nano Banana 2 Edit",
+   "image_param": "image_urls",
+   "image_list": true,
+   "est_usd": 0.08,
+   "options": [
+    {
+     "key": "num_images",
+     "label": "Count",
+     "choices": [
+      1,
+      2,
+      3,
+      4
+     ]
+    }
+   ]
+  },
+  {
+   "provider": "fal",
+   "mode": "edit",
+   "id": "fal-ai/nano-banana-pro/edit",
+   "name": "Nano Banana Pro Edit",
+   "image_param": "image_urls",
+   "image_list": true,
+   "est_usd": 0.15,
+   "options": [
+    {
+     "key": "num_images",
+     "label": "Count",
+     "choices": [
+      1,
+      2,
+      3,
+      4
+     ]
+    }
+   ]
+  },
+  {
+   "provider": "fal",
+   "mode": "edit",
+   "id": "fal-ai/flux-2-pro/edit",
+   "name": "FLUX.2 Pro Edit",
+   "image_param": "image_urls",
+   "image_list": true,
+   "est_usd": 0.05,
+   "options": []
+  },
+  {
+   "provider": "fal",
+   "mode": "edit",
+   "id": "bytedance/seedream/v4.5/edit",
+   "name": "Seedream 4.5 Edit",
+   "image_param": "image_urls",
+   "image_list": true,
+   "est_usd": 0.04,
+   "options": []
+  },
+  {
+   "provider": "fal",
+   "mode": "t2v",
+   "id": "fal-ai/veo3.1",
+   "name": "Veo 3.1 (audio)",
+   "est_usd": 3.2,
+   "options": [
+    {
+     "key": "aspect_ratio",
+     "label": "Aspect",
+     "choices": [
+      "16:9",
+      "9:16"
+     ]
+    },
+    {
+     "key": "duration",
+     "label": "Length",
+     "choices": [
+      "4s",
+      "6s",
+      "8s"
+     ]
+    },
+    {
+     "key": "generate_audio",
+     "label": "Audio",
+     "choices": [
+      true,
+      false
+     ]
+    }
+   ]
+  },
+  {
+   "provider": "fal",
+   "mode": "t2v",
+   "id": "fal-ai/kling-video/v3/pro/text-to-video",
+   "name": "Kling 3.0 Pro",
+   "est_usd": 1.2,
+   "options": [
+    {
+     "key": "aspect_ratio",
+     "label": "Aspect",
+     "choices": [
+      "16:9",
+      "9:16",
+      "1:1"
+     ]
+    },
+    {
+     "key": "duration",
+     "label": "Length",
+     "choices": [
+      "5",
+      "10"
+     ]
+    }
+   ]
+  },
+  {
+   "provider": "fal",
+   "mode": "t2v",
+   "id": "fal-ai/kling-video/v2.5-turbo/pro/text-to-video",
+   "name": "Kling 2.5 Turbo Pro (cheaper)",
+   "est_usd": 0.35,
+   "options": [
+    {
+     "key": "aspect_ratio",
+     "label": "Aspect",
+     "choices": [
+      "16:9",
+      "9:16",
+      "1:1"
+     ]
+    },
+    {
+     "key": "duration",
+     "label": "Length",
+     "choices": [
+      "5",
+      "10"
+     ]
+    }
+   ]
+  },
+  {
+   "provider": "fal",
+   "mode": "t2v",
+   "id": "bytedance/seedance-2.0/text-to-video",
+   "name": "Seedance 2.0",
+   "est_usd": 1.5,
+   "options": [
+    {
+     "key": "aspect_ratio",
+     "label": "Aspect",
+     "choices": [
+      "16:9",
+      "9:16",
+      "1:1"
+     ]
+    }
+   ]
+  },
+  {
+   "provider": "fal",
+   "mode": "i2v",
+   "id": "fal-ai/kling-video/v3/pro/image-to-video",
+   "name": "Kling 3.0 Pro",
+   "image_param": "start_image_url",
+   "est_usd": 1.2,
+   "options": [
+    {
+     "key": "duration",
+     "label": "Length",
+     "choices": [
+      "5",
+      "10"
+     ]
+    }
+   ]
+  },
+  {
+   "provider": "fal",
+   "mode": "i2v",
+   "id": "fal-ai/kling-video/v3/turbo/pro/image-to-video",
+   "name": "Kling 3.0 Turbo Pro",
+   "image_param": "image_url",
+   "est_usd": 0.6,
+   "options": [
+    {
+     "key": "duration",
+     "label": "Length",
+     "choices": [
+      "5",
+      "10"
+     ]
+    }
+   ]
+  },
+  {
+   "provider": "fal",
+   "mode": "i2v",
+   "id": "fal-ai/veo3.1/image-to-video",
+   "name": "Veo 3.1 (audio)",
+   "image_param": "image_url",
+   "est_usd": 3.2,
+   "options": [
+    {
+     "key": "duration",
+     "label": "Length",
+     "choices": [
+      "4s",
+      "6s",
+      "8s"
+     ]
+    },
+    {
+     "key": "generate_audio",
+     "label": "Audio",
+     "choices": [
+      true,
+      false
+     ]
+    }
+   ]
+  },
+  {
+   "provider": "fal",
+   "mode": "i2v",
+   "id": "bytedance/seedance-2.0/image-to-video",
+   "name": "Seedance 2.0",
+   "image_param": "image_url",
+   "est_usd": 1.5,
+   "options": []
+  },
+  {
+   "provider": "replicate",
+   "mode": "t2i",
+   "id": "black-forest-labs/flux-schnell",
+   "name": "FLUX Schnell",
+   "est_usd": 0.003,
+   "options": [
+    {
+     "key": "aspect_ratio",
+     "label": "Aspect",
+     "choices": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "4:3",
+      "3:4"
+     ]
+    },
+    {
+     "key": "num_outputs",
+     "label": "Count",
+     "choices": [
+      1,
+      2,
+      3,
+      4
+     ]
+    }
+   ],
+   "safety": {
+    "key": "disable_safety_checker",
+    "value": true
+   }
+  },
+  {
+   "provider": "replicate",
+   "mode": "t2i",
+   "id": "black-forest-labs/flux-dev",
+   "name": "FLUX Dev (open weights)",
+   "est_usd": 0.025,
+   "safety": {
+    "key": "disable_safety_checker",
+    "value": true
+   },
+   "options": [
+    {
+     "key": "aspect_ratio",
+     "label": "Aspect",
+     "choices": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "4:3",
+      "3:4"
+     ]
+    }
+   ]
+  },
+  {
+   "provider": "replicate",
+   "mode": "t2i",
+   "id": "black-forest-labs/flux-1.1-pro",
+   "name": "FLUX 1.1 Pro",
+   "est_usd": 0.04,
+   "options": [
+    {
+     "key": "aspect_ratio",
+     "label": "Aspect",
+     "choices": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "4:3",
+      "3:4"
+     ]
+    }
+   ]
+  },
+  {
+   "provider": "replicate",
+   "mode": "t2i",
+   "id": "google/nano-banana-pro",
+   "name": "Nano Banana Pro",
+   "est_usd": 0.15,
+   "options": [
+    {
+     "key": "aspect_ratio",
+     "label": "Aspect",
+     "choices": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "4:3",
+      "3:4"
+     ]
+    }
+   ]
+  },
+  {
+   "provider": "replicate",
+   "mode": "edit",
+   "id": "google/nano-banana-pro",
+   "name": "Nano Banana Pro Edit",
+   "image_param": "image_input",
+   "image_list": true,
+   "est_usd": 0.15,
+   "options": []
+  },
+  {
+   "provider": "replicate",
+   "mode": "t2v",
+   "id": "google/veo-3.1",
+   "name": "Veo 3.1",
+   "est_usd": 3.2,
+   "options": [
+    {
+     "key": "aspect_ratio",
+     "label": "Aspect",
+     "choices": [
+      "16:9",
+      "9:16"
+     ]
+    }
+   ]
+  },
+  {
+   "provider": "replicate",
+   "mode": "i2v",
+   "id": "google/veo-3.1",
+   "name": "Veo 3.1",
+   "image_param": "image",
+   "est_usd": 3.2,
+   "options": []
+  },
+  {
+   "provider": "openai",
+   "mode": "t2i",
+   "id": "gpt-image-2",
+   "name": "GPT Image 2",
+   "est_usd": 0.07,
+   "options": [
+    {
+     "key": "size",
+     "label": "Size",
+     "choices": [
+      "1024x1024",
+      "1536x1024",
+      "1024x1536",
+      "auto"
+     ]
+    },
+    {
+     "key": "quality",
+     "label": "Quality",
+     "choices": [
+      "low",
+      "medium",
+      "high",
+      "auto"
+     ]
+    },
+    {
+     "key": "n",
+     "label": "Count",
+     "choices": [
+      1,
+      2,
+      3,
+      4
+     ]
+    }
+   ]
+  },
+  {
+   "provider": "openai",
+   "mode": "t2i",
+   "id": "gpt-image-1.5",
+   "name": "GPT Image 1.5",
+   "est_usd": 0.05,
+   "options": [
+    {
+     "key": "size",
+     "label": "Size",
+     "choices": [
+      "1024x1024",
+      "1536x1024",
+      "1024x1536",
+      "auto"
+     ]
+    },
+    {
+     "key": "quality",
+     "label": "Quality",
+     "choices": [
+      "low",
+      "medium",
+      "high",
+      "auto"
+     ]
+    },
+    {
+     "key": "background",
+     "label": "Background",
+     "choices": [
+      "transparent",
+      "opaque",
+      "auto"
+     ]
+    },
+    {
+     "key": "n",
+     "label": "Count",
+     "choices": [
+      1,
+      2,
+      3,
+      4
+     ]
+    }
+   ]
+  },
+  {
+   "provider": "openai",
+   "mode": "edit",
+   "id": "gpt-image-2",
+   "name": "GPT Image 2 Edit",
+   "est_usd": 0.07,
+   "options": [
+    {
+     "key": "size",
+     "label": "Size",
+     "choices": [
+      "1024x1024",
+      "1536x1024",
+      "1024x1536",
+      "auto"
+     ]
+    },
+    {
+     "key": "quality",
+     "label": "Quality",
+     "choices": [
+      "low",
+      "medium",
+      "high",
+      "auto"
+     ]
+    }
+   ]
+  },
+  {
+   "provider": "google",
+   "mode": "t2i",
+   "id": "gemini-nano-banana-2.1",
+   "name": "Nano Banana 2.1",
+   "est_usd": 0.07,
+   "options": [
+    {
+     "key": "aspectRatio",
+     "label": "Aspect",
+     "choices": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "4:3",
+      "3:4",
+      "3:2",
+      "2:3",
+      "21:9"
+     ]
+    },
+    {
+     "key": "imageSize",
+     "label": "Resolution",
+     "choices": [
+      "1K",
+      "2K",
+      "4K"
+     ]
+    }
+   ]
+  },
+  {
+   "provider": "google",
+   "mode": "t2i",
+   "id": "gemini-3-pro-image",
+   "name": "Nano Banana Pro",
+   "est_usd": 0.14,
+   "options": [
+    {
+     "key": "aspectRatio",
+     "label": "Aspect",
+     "choices": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "4:3",
+      "3:4",
+      "3:2",
+      "2:3",
+      "21:9"
+     ]
+    },
+    {
+     "key": "imageSize",
+     "label": "Resolution",
+     "choices": [
+      "1K",
+      "2K",
+      "4K"
+     ]
+    }
+   ]
+  },
+  {
+   "provider": "google",
+   "mode": "edit",
+   "id": "gemini-nano-banana-2.1",
+   "name": "Nano Banana 2.1 Edit",
+   "est_usd": 0.07,
+   "options": [
+    {
+     "key": "aspectRatio",
+     "label": "Aspect",
+     "choices": [
+      "1:1",
+      "16:9",
+      "9:16",
+      "4:3",
+      "3:4"
+     ]
+    }
+   ]
+  },
+  {
+   "provider": "google",
+   "mode": "edit",
+   "id": "gemini-3-pro-image",
+   "name": "Nano Banana Pro Edit",
+   "est_usd": 0.14,
+   "options": []
+  },
+  {
+   "provider": "google",
+   "mode": "t2v",
+   "id": "veo-3.1-generate-preview",
+   "name": "Veo 3.1",
+   "est_usd": 3.2,
+   "options": [
+    {
+     "key": "aspectRatio",
+     "label": "Aspect",
+     "choices": [
+      "16:9",
+      "9:16"
+     ]
+    },
+    {
+     "key": "resolution",
+     "label": "Resolution",
+     "choices": [
+      "720p",
+      "1080p"
+     ]
+    }
+   ]
+  },
+  {
+   "provider": "google",
+   "mode": "t2v",
+   "id": "veo-3.1-fast-generate-preview",
+   "name": "Veo 3.1 Fast",
+   "est_usd": 1.2,
+   "options": [
+    {
+     "key": "aspectRatio",
+     "label": "Aspect",
+     "choices": [
+      "16:9",
+      "9:16"
+     ]
+    }
+   ]
+  },
+  {
+   "provider": "google",
+   "mode": "i2v",
+   "id": "veo-3.1-generate-preview",
+   "name": "Veo 3.1",
+   "est_usd": 3.2,
+   "options": [
+    {
+     "key": "aspectRatio",
+     "label": "Aspect",
+     "choices": [
+      "16:9",
+      "9:16"
+     ]
+    }
+   ]
+  }
+ ]
 }

@@ -55,3 +55,18 @@ Each entry in `models.json` looks like this:
 ## Run from source
 
 Install Python 3.10+ from python.org, then double-click `run.bat`. Use `build.bat` to build the exe locally.
+
+## Prompt Builder
+
+Each generation tab has a collapsible **Prompt Builder** under the prompt box.
+
+- Pick from a list for each category (style, lighting, mood, shot, lens, composition, color, quality, things to avoid). Video adds camera movement, motion and audio; Edit adds "keep unchanged". You can also type your own text in any box.
+- Type your core idea in the prompt box. The builder adds your picks when you generate, and the preview shows exactly what will be sent.
+- **Auto / Sentences / Tags:** Auto writes plain sentences, and switches to comma-separated tags for SDXL-family models.
+- **🎲 Random** fills the categories at random. Tick "keep on 🎲" on a row to lock it.
+- **Presets** save and reload a full combination.
+- **💾** saves what you typed as a new option. **Edit option lists** opens `prompt_options.json` where you can add or hide options.
+
+## Safety checker switch
+
+Open-weight models that expose a safety-checker setting (FLUX Dev/Schnell, SDXL) show a **Turn off this model's safety checker** checkbox. Hosted frontier models (Nano Banana, GPT Image, Veo, Kling, Seedance) don't offer one, and their filters always apply. Provider terms of service still apply either way.

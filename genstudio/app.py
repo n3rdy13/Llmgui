@@ -20,6 +20,7 @@ import requests
 from PIL import Image, ImageDraw, ImageGrab
 
 from . import storage
+from .promptbuilder import PromptBuilder
 from .providers import (KEY_URLS, PROVIDER_LABELS, PROVIDERS, Cancelled,
                         ProviderError, test_key)
 
@@ -291,6 +292,10 @@ class GenPanel(ctk.CTkFrame):
         self.prompt = ctk.CTkTextbox(left, height=150, wrap="word")
         self.prompt.pack(fill="x", pady=2)
         self.prompt.bind("<Control-Return>", lambda e: (self.generate(), "break")[1])
+        self.safety_var = ctk.BooleanVar(value=False)
+        self.builder = PromptBuilder(left, self)
+        self.builder.pack(fill="x", pady=(4, 0))
+        self.prompt.bind("<KeyRelease>", lambda e: self.builder.update_preview())
 
         self.adv_var = ctk.BooleanVar(value=False)
         ctk.CTkCheckBox(left, text="Advanced JSON parameters", variable=self.adv_var,
@@ -347,6 +352,7 @@ class GenPanel(ctk.CTkFrame):
 
     def on_mode_switch(self, label):
         self.mode = next(m for m in self.modes if MODE_LABELS[m] == label)
+        self.builder.set_mode(self.mode)
         self.refresh_models()
 
     def current_model(self) -> dict | None:
@@ -364,6 +370,7 @@ class GenPanel(ctk.CTkFrame):
         for w in self.options_frame.winfo_children():
             w.destroy()
         self.option_widgets.clear()
+        self.after_idle(lambda: self.builder.set_model(self.current_model()))
         if lbl == CUSTOM_LABEL:
             self.custom.pack(fill="x", pady=4, after=self.model_info)
             self.model_info.configure(text="Put model-specific inputs in Advanced JSON.")
@@ -390,6 +397,10 @@ class GenPanel(ctk.CTkFrame):
             menu.grid(row=i, column=1, sticky="ew", pady=2, padx=(6, 0))
             self.option_widgets[opt["key"]] = (menu, mapping)
         self.options_frame.grid_columnconfigure(1, weight=1)
+        if m.get("safety"):
+            ctk.CTkCheckBox(self.options_frame, text="Turn off this model's safety checker",
+                            variable=self.safety_var).grid(row=len(m.get("options", [])), column=0, columnspan=2,
+                                                           sticky="w", pady=(6, 0))
 
     def open_docs(self):
         m = self.current_model()
@@ -460,6 +471,9 @@ class GenPanel(ctk.CTkFrame):
             v = mapping.get(menu.get())
             if v is not None:
                 out[key] = v
+        m = self.current_model()
+        if m and m.get("safety") and self.safety_var.get():
+            out[m["safety"]["key"]] = m["safety"]["value"]
         return out
 
     def generate(self):
@@ -473,7 +487,7 @@ class GenPanel(ctk.CTkFrame):
                                    f"Add your {PROVIDER_LABELS[m['provider']]} API key in the Settings tab first.")
             self.app.tabs.set("Settings")
             return
-        prompt = self.prompt.get("1.0", "end").strip()
+        prompt = self.builder.compose(self.prompt.get("1.0", "end").strip(), m)
         if not prompt and self.mode in ("t2i", "t2v", "edit"):
             messagebox.showwarning("Prompt", "Enter a prompt.")
             return
