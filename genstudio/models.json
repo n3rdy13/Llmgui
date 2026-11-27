@@ -876,6 +876,55 @@
      ]
     }
    ]
+  },
+  {
+   "provider": "local",
+   "mode": "t2i",
+   "id": "cyberrealistic",
+   "name": "CyberRealistic (SD 1.5)",
+   "est_usd": 0,
+   "prompt_style": "tags",
+   "negative_param": "negative_prompt",
+   "options": [
+    {
+     "key": "size",
+     "label": "Size",
+     "choices": [
+      "512x512",
+      "512x768",
+      "768x512",
+      "768x768"
+     ]
+    },
+    {
+     "key": "steps",
+     "label": "Steps",
+     "choices": [
+      20,
+      25,
+      30,
+      40
+     ]
+    },
+    {
+     "key": "cfg_scale",
+     "label": "CFG",
+     "choices": [
+      6,
+      7,
+      8
+     ]
+    },
+    {
+     "key": "n",
+     "label": "Count",
+     "choices": [
+      1,
+      2,
+      4
+     ]
+    }
+   ]
   }
  ]
 }

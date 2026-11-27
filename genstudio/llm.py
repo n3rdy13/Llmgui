@@ -93,9 +93,9 @@ def system_prompt(model_name: str, mode: str, tags: bool) -> str:
         "- Keep the user's subject and intent exactly; never change who or what the prompt is about.\n"
         "- Work every option the user picked into the prompt naturally. Be concrete and visual: materials, textures, "
         "light, color, framing, atmosphere.\n"
-        "- If the user listed things to avoid, phrase the prompt so those are absent, and end with a short 'Avoid: ...' clause.\n"
+        "- If the draft contains an 'Avoid:' list, phrase the prompt so those things are absent and end with a short 'Avoid: ...' clause.\n"
         "- Do not invent text to be rendered in the image, brand names, or real people.\n"
-        "- Keep it under 150 words.\n"
+        f"- Keep it under {'60' if tags else '150'} words.\n"
         "- Output ONLY the finished prompt. No preamble, no quotation marks, no explanation, no markdown."
     )
 

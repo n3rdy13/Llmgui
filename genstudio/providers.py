@@ -363,14 +363,106 @@ class GoogleProvider:
         return out
 
 
+# --------------------------------------------------------------------------- Local server
+
+class LocalProvider:
+    """A server on your own network that generates images.
+
+    protocol "openai": POST {base}/images/generations (LocalAI, stable-diffusion.cpp servers, many others)
+    protocol "a1111":  POST {base}/sdapi/v1/txt2img (Automatic1111 / Forge / SD.Next, start with --api)
+    """
+    name = "local"
+    TIMEOUT = 1800  # CPU-only machines can take many minutes per image
+
+    def __init__(self, key: str, base_url: str = "", protocol: str = "openai", model_name: str = ""):
+        base = (base_url or "").strip().rstrip("/")
+        if not base:
+            raise ProviderError("Set the Local server address in Settings first.")
+        if not base.startswith(("http://", "https://")):
+            base = "http://" + base
+        self.base, self.protocol, self.model_name = base, protocol, model_name.strip()
+        self.h = {"Content-Type": "application/json"}
+        if key:
+            self.h["Authorization"] = f"Bearer {key}"
+
+    def run(self, model, prompt, images, options, extra, progress: Progress, cancel):
+        if model.get("mode") != "t2i":
+            raise ProviderError("The Local server provider only does text → image.")
+        size = options.get("size", "512x512")
+        progress("Generating… (CPU-only machines can take several minutes)")
+        if self.protocol == "a1111":
+            try:
+                w, h = (int(x) for x in size.lower().split("x"))
+            except ValueError:
+                raise ProviderError(f"Bad size '{size}', use WIDTHxHEIGHT such as 512x512.")
+            body = {"prompt": prompt, "width": w, "height": h,
+                    "steps": options.get("steps", 28), "cfg_scale": options.get("cfg_scale", 7),
+                    "batch_size": options.get("n", 1)}
+            if options.get("negative_prompt"):
+                body["negative_prompt"] = options["negative_prompt"]
+            body.update(extra)
+            r = requests.post(f"{self.base}/sdapi/v1/txt2img", json=body, headers=self.h, timeout=self.TIMEOUT)
+            if cancel.is_set():
+                raise Cancelled()
+            if r.status_code >= 400:
+                raise _err(r, "Local (A1111)")
+            imgs = r.json().get("images") or []
+            out = [{"data": base64.b64decode(i.split(",", 1)[-1]), "ext": "png"} for i in imgs]
+        else:
+            body = {"model": self.model_name or model["id"], "prompt": prompt, "size": size,
+                    "n": options.get("n", 1), "response_format": "b64_json"}
+            if options.get("negative_prompt"):
+                body["negative_prompt"] = options["negative_prompt"]
+            body.update(extra)
+            r = requests.post(f"{self.base}/images/generations", json=body, headers=self.h, timeout=self.TIMEOUT)
+            if cancel.is_set():
+                raise Cancelled()
+            if r.status_code >= 400:
+                raise _err(r, "Local server")
+            out = []
+            for d in r.json().get("data", []):
+                if d.get("b64_json"):
+                    out.append({"data": base64.b64decode(d["b64_json"]), "ext": "png"})
+                elif d.get("url"):
+                    out.append({"url": d["url"]})
+        if not out:
+            raise ProviderError("The local server returned no images.")
+        return out
+
+
+def test_local(base_url: str, key: str, protocol: str) -> tuple[bool, str]:
+    base = (base_url or "").strip().rstrip("/")
+    if not base:
+        return False, "Enter the server address first."
+    if not base.startswith(("http://", "https://")):
+        base = "http://" + base
+    h = {"Authorization": f"Bearer {key}"} if key else {}
+    try:
+        if protocol == "a1111":
+            r = requests.get(f"{base}/sdapi/v1/sd-models", headers=h, timeout=15)
+            if r.status_code < 400:
+                names = [m.get("title") or m.get("model_name") for m in r.json()][:4]
+                return True, "Connected. Checkpoints: " + (", ".join(n for n in names if n) or "none listed")
+        else:
+            r = requests.get(f"{base}/models", headers=h, timeout=15)
+            if r.status_code < 400:
+                data = r.json().get("data", [])
+                return True, "Connected. Models: " + (", ".join(m.get("id", "?") for m in data[:5]) or "none listed")
+        return False, f"HTTP {r.status_code}: {r.text[:200]}"
+    except Exception as e:
+        return False, f"Can't reach {base}: {e}"
+
+
 PROVIDERS = {
     "fal": FalProvider,
     "replicate": ReplicateProvider,
     "openai": OpenAIProvider,
     "google": GoogleProvider,
+    "local": LocalProvider,
 }
 
-PROVIDER_LABELS = {"fal": "fal.ai", "replicate": "Replicate", "openai": "OpenAI", "google": "Google"}
+PROVIDER_LABELS = {"fal": "fal.ai", "replicate": "Replicate", "openai": "OpenAI", "google": "Google",
+                   "local": "Local server"}
 
 KEY_URLS = {
     "fal": "https://fal.ai/dashboard/keys",

@@ -81,7 +81,9 @@ TAG_MODEL_HINTS = ("sdxl", "stable-diffusion", "sd3", "sd-", "lightning", "pony"
 
 
 def wants_tags(model: dict | None) -> bool:
-    """Tag-style prompts mostly help SDXL-family models. Newer models read plain sentences better."""
+    """Tag-style prompts mostly help SD 1.5 / SDXL-family models. Newer models read plain sentences better."""
+    if (model or {}).get("prompt_style") == "tags":
+        return True
     mid = (model or {}).get("id", "").lower()
     return any(h in mid for h in TAG_MODEL_HINTS)
 
@@ -121,9 +123,10 @@ def ensure_options_file() -> None:
         storage._write_json(OPTIONS_PATH, template)
 
 
-def compose(subject: str, selections: dict[str, list[str]], tags: bool, mode: str) -> str:
+def compose(subject: str, selections: dict[str, list[str]], tags: bool, mode: str,
+            skip_negatives: bool = False) -> str:
     subject = subject.strip()
-    cats = [c for c in CATEGORIES if mode in c[2]]
+    cats = [c for c in CATEGORIES if mode in c[2] and not (skip_negatives and c[0] == "negatives")]
     if tags:
         parts = [subject.rstrip(".,; ")] if subject else []
         for key, _label, _m, _multi, _tpl in cats:
@@ -296,10 +299,13 @@ class PromptBuilder(ctk.CTkFrame):
         f = self.fmt.get()
         return f == "Tags" or (f == "Auto" and wants_tags(self.model))
 
-    def compose(self, subject: str, model: dict | None = None) -> str:
+    def compose(self, subject: str, model: dict | None = None, skip_negatives: bool = False) -> str:
         if model is not None:
             self.model = model
-        return compose(subject, self.selections(), self.use_tags(), self.mode)
+        return compose(subject, self.selections(), self.use_tags(), self.mode, skip_negatives)
+
+    def has_neg_param(self) -> bool:
+        return bool((self.model or {}).get("negative_param"))
 
     def update_preview(self):
         if not self.open:
@@ -336,9 +342,11 @@ class PromptBuilder(ctk.CTkFrame):
             return
         m = self.panel.current_model()
         tags = self.use_tags()
-        composed = compose(subject, sel, tags, self.mode)
+        neg = self.has_neg_param()
+        composed = compose(subject, sel, tags, self.mode, skip_negatives=neg)
         key = cfg.get_key("llm")
         self.prev_state = (subject, sel)
+        self.keep_negatives = neg
         self.llm_btn.configure(state="disabled", text="Working…")
         self.llm_status.configure(text="can take a while on phone clusters")
         events = self.panel.app.events
@@ -358,7 +366,9 @@ class PromptBuilder(ctk.CTkFrame):
             messagebox.showerror("LLM error", err)
             return
         self.panel.set_prompt(out)
-        self.clear()
+        for k, v in self.vars.items():
+            if not (k == "negatives" and getattr(self, "keep_negatives", False)):
+                v.set("")
         self.undo_btn.configure(state="normal")
         self.llm_status.configure(text="Prompt rewritten. Edit it freely.")
 

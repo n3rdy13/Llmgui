@@ -74,3 +74,12 @@ Open-weight models that expose a safety-checker setting (FLUX Dev/Schnell, SDXL)
 ## Prompt LLM (PrivateLM, llama.cpp, LM Studio, Ollama…)
 
 In **Settings → Prompt LLM**, enter the Base URL (e.g. `http://192.168.1.74:8080/v1`), API key and model name of any OpenAI-compatible server, then **Save**. **Test / fetch model** checks the connection and fills in the model name. In the Prompt Builder, **✨ Enhance with LLM** rewrites your idea and option picks into a finished prompt tailored to the selected image/video model. **↩ Undo** restores what you had. Your computer must be on the same network as the server.
+
+## Local image server (CyberRealistic and other Stable Diffusion models)
+
+A text LLM such as Gemma can't generate images, so local image generation needs an image engine. In **Settings → Local image server**, choose a protocol, enter the server address, and click **Save** then **Test**. Then pick **CyberRealistic (SD 1.5)** in the Image tab.
+
+- **Automatic1111 / Forge:** start it with `--api` and use `http://<pc-ip>:7860`.
+- **OpenAI Images API:** LocalAI, stable-diffusion.cpp servers and similar. Use the address ending in `/v1`.
+
+Notes for SD 1.5 models: the builder writes tag-style prompts, and "Avoid" items are sent as a real negative prompt instead of being added to the prompt text. Native size is 512×512 (the model page recommends 25–30 steps and CFG 7–8). Without a GPU expect several minutes per image. Video is not supported locally.

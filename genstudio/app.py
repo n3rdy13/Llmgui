@@ -333,7 +333,7 @@ class GenPanel(ctk.CTkFrame):
         labels = []
         for m in models:
             lbl = model_label(m)
-            if not self.app.cfg.get_key(m["provider"]):
+            if not self.app.provider_ready(m["provider"]):
                 lbl += "  (no key)"
             self.label_to_model[lbl] = m
             labels.append(lbl)
@@ -483,12 +483,15 @@ class GenPanel(ctk.CTkFrame):
             messagebox.showwarning("Model", "Pick a model (or enter a custom model ID).")
             return
         m = {**m, "mode": self.mode}
-        if not self.app.cfg.get_key(m["provider"]):
-            messagebox.showwarning("API key needed",
-                                   f"Add your {PROVIDER_LABELS[m['provider']]} API key in the Settings tab first.")
+        if not self.app.provider_ready(m["provider"]):
+            what = "server address" if m["provider"] == "local" else "API key"
+            messagebox.showwarning("Setup needed",
+                                   f"Add your {PROVIDER_LABELS[m['provider']]} {what} in the Settings tab first.")
             self.app.tabs.set("Settings")
             return
-        prompt = self.builder.compose(self.prompt.get("1.0", "end").strip(), m)
+        neg_param = m.get("negative_param")
+        negs = self.builder.selections().get("negatives", []) if neg_param else []
+        prompt = self.builder.compose(self.prompt.get("1.0", "end").strip(), m, skip_negatives=bool(neg_param))
         if not prompt and self.mode in ("t2i", "t2v", "edit"):
             messagebox.showwarning("Prompt", "Enter a prompt.")
             return
@@ -506,7 +509,10 @@ class GenPanel(ctk.CTkFrame):
                 return
         reps = int(self.repeat_menu.get().lstrip("×"))
         for _ in range(reps):
-            self.app.start_job(Job(self, m, prompt, self.images, self.collect_options(), extra))
+            opts = self.collect_options()
+            if negs:
+                opts[neg_param] = ", ".join(negs)
+            self.app.start_job(Job(self, m, prompt, self.images, opts, extra))
 
     def add_card(self, job: Job) -> JobCard:
         self.empty_lbl.pack_forget()
@@ -691,9 +697,11 @@ class SettingsPanel(ctk.CTkScrollableFrame):
                 "fal.ai alone covers most image and video models.")
         ctk.CTkLabel(self, text=note, text_color="gray", wraplength=800, justify="left").pack(anchor="w", pady=(0, 8))
         for p in PROVIDERS:
-            self.key_row(p)
+            if p != "local":
+                self.key_row(p)
 
         self.build_llm_section()
+        self.build_local_section()
 
         ctk.CTkLabel(self, text="Output", font=ctk.CTkFont(size=18, weight="bold")).pack(anchor="w", pady=(18, 4))
         row = ctk.CTkFrame(self, fg_color="transparent")
@@ -756,6 +764,63 @@ class SettingsPanel(ctk.CTkScrollableFrame):
         ctk.CTkButton(btns, text="Test / fetch model", width=130, fg_color="gray30",
                       command=self.test_llm).pack(side="left", padx=6)
         self.llm_status.pack(side="left", padx=6)
+
+    def build_local_section(self):
+        cfg = self.app.cfg
+        ctk.CTkLabel(self, text="Local image server (optional)", font=ctk.CTkFont(size=18, weight="bold")).pack(
+            anchor="w", pady=(18, 2))
+        ctk.CTkLabel(self, text="A server on your network that generates images, e.g. Automatic1111/Forge (start it with "
+                                "--api), LocalAI or a stable-diffusion.cpp server. Used by the “CyberRealistic (SD 1.5)” "
+                                "entry in the Image tab. Text → image only.",
+                     text_color="gray", wraplength=800, justify="left").pack(anchor="w", pady=(0, 6))
+        f = ctk.CTkFrame(self)
+        f.pack(fill="x", pady=3)
+        f.grid_columnconfigure(1, weight=1)
+        self.local_entries = {}
+        ctk.CTkLabel(f, text="Protocol", width=80, anchor="w").grid(row=0, column=0, padx=10, pady=5, sticky="w")
+        self.local_proto = ctk.CTkOptionMenu(f, values=["OpenAI Images API", "Automatic1111 / Forge"], width=220)
+        self.local_proto.set("Automatic1111 / Forge" if cfg.get("local_protocol") == "a1111" else "OpenAI Images API")
+        self.local_proto.grid(row=0, column=1, sticky="w", pady=5)
+        rows = [("Address", "local_base_url", "http://192.168.1.50:7860  (A1111)  or  http://host:8080/v1  (OpenAI)", False),
+                ("API key", "local_key", "optional", True),
+                ("Model name", "local_model", "optional, OpenAI protocol only", False)]
+        for i, (label, key, ph, secret) in enumerate(rows, start=1):
+            ctk.CTkLabel(f, text=label, width=80, anchor="w").grid(row=i, column=0, padx=10, pady=5, sticky="w")
+            e = ctk.CTkEntry(f, placeholder_text=ph, show="•" if secret else "")
+            val = cfg.get_key("local") if key == "local_key" else cfg.get(key, "")
+            if val:
+                e.insert(0, val)
+            e.grid(row=i, column=1, padx=(0, 8), pady=5, sticky="ew")
+            self.local_entries[key] = e
+        btns = ctk.CTkFrame(f, fg_color="transparent")
+        btns.grid(row=4, column=1, sticky="w", pady=(2, 8))
+        self.local_status = ctk.CTkLabel(btns, text="", wraplength=520, justify="left")
+        ctk.CTkButton(btns, text="Save", width=70, command=self.save_local).pack(side="left")
+        ctk.CTkButton(btns, text="Test", width=70, fg_color="gray30", command=self.test_local_server).pack(side="left", padx=6)
+        self.local_status.pack(side="left", padx=6)
+
+    def local_protocol(self) -> str:
+        return "a1111" if self.local_proto.get().startswith("Auto") else "openai"
+
+    def save_local(self):
+        e = self.local_entries
+        self.app.cfg.set("local_base_url", e["local_base_url"].get().strip())
+        self.app.cfg.set("local_model", e["local_model"].get().strip())
+        self.app.cfg.set("local_protocol", self.local_protocol())
+        self.app.cfg.set_key("local", e["local_key"].get())
+        self.local_status.configure(text="Saved.", text_color="#6cc070")
+        self.app.refresh_all_models()
+
+    def test_local_server(self):
+        from .providers import test_local
+        e = self.local_entries
+        base, key, proto = e["local_base_url"].get().strip(), e["local_key"].get().strip(), self.local_protocol()
+        self.local_status.configure(text="Testing…", text_color="gray")
+
+        def work():
+            ok, msg = test_local(base, key, proto)
+            self.app.events.put(("ui", lambda: self.local_status.configure(text=msg, text_color="#6cc070" if ok else "#e06c6c")))
+        threading.Thread(target=work, daemon=True).start()
 
     def save_llm(self):
         e = self.llm_entries
@@ -880,7 +945,7 @@ class GenStudio(ctk.CTk):
             p.pack(fill="both", expand=True)
         self.tabs.configure(command=self.on_tab)
 
-        if not any(self.cfg.get_key(p) for p in PROVIDERS):
+        if not any(self.provider_ready(p) for p in PROVIDERS):
             self.tabs.set("Settings")
         self.after(100, self.pump)
         self.after(1000, self.tick)
@@ -905,6 +970,18 @@ class GenStudio(ctk.CTk):
         if self.tabs.get() == "Gallery":
             self.gallery.refresh()
 
+    def provider_ready(self, name: str) -> bool:
+        if name == "local":
+            return bool(self.cfg.get("local_base_url"))
+        return bool(self.cfg.get_key(name))
+
+    def make_provider(self, name: str):
+        key = self.cfg.get_key(name)
+        if name == "local":
+            return PROVIDERS["local"](key, self.cfg.get("local_base_url", ""),
+                                      self.cfg.get("local_protocol", "openai"), self.cfg.get("local_model", ""))
+        return PROVIDERS[name](key)
+
     def output_dir(self) -> str:
         return self.cfg.get("output_dir") or str(storage.DEFAULT_OUTPUT)
 
@@ -927,8 +1004,7 @@ class GenStudio(ctk.CTk):
         def progress(text):
             self.events.put(("status", job.id, text))
         try:
-            key = self.cfg.get_key(job.model["provider"])
-            provider = PROVIDERS[job.model["provider"]](key)
+            provider = self.make_provider(job.model["provider"])
             outputs = provider.run(job.model, job.prompt, job.images, job.options, job.extra, progress, job.cancel)
             progress("Saving…")
             files = self.save_outputs(job, outputs)
