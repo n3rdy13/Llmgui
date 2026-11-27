@@ -3,11 +3,12 @@ from __future__ import annotations
 
 import json
 import random
+import threading
 from tkinter import messagebox
 
 import customtkinter as ctk
 
-from . import storage
+from . import llm, storage
 
 OPTIONS_PATH = storage.APP_DIR / "prompt_options.json"
 PRESETS_PATH = storage.APP_DIR / "prompt_presets.json"
@@ -175,6 +176,17 @@ class PromptBuilder(ctk.CTkFrame):
         ctk.CTkButton(row, text="🎲 Random", width=88, command=self.randomize).pack(side="left")
         ctk.CTkButton(row, text="Clear", width=56, fg_color="gray30", command=self.clear).pack(side="left", padx=4)
         ctk.CTkButton(row, text="Insert into prompt", width=120, command=self.insert).pack(side="left")
+        row_llm = ctk.CTkFrame(self.body, fg_color="transparent")
+        row_llm.pack(fill="x", padx=6, pady=(6, 0))
+        self.llm_btn = ctk.CTkButton(row_llm, text="✨ Enhance with LLM", width=150, fg_color="#6b3fa0",
+                                     hover_color="#8350bd", command=self.enhance)
+        self.llm_btn.pack(side="left")
+        self.undo_btn = ctk.CTkButton(row_llm, text="↩ Undo", width=64, fg_color="gray30", state="disabled",
+                                      command=self.undo)
+        self.undo_btn.pack(side="left", padx=4)
+        self.llm_status = ctk.CTkLabel(row_llm, text="", text_color="gray", anchor="w")
+        self.llm_status.pack(side="left", padx=4)
+        self.prev_state = None
 
         pr = ctk.CTkFrame(self.body, fg_color="transparent")
         pr.pack(fill="x", padx=6, pady=(6, 0))
@@ -309,6 +321,58 @@ class PromptBuilder(ctk.CTkFrame):
         subject = self.panel.prompt.get("1.0", "end").strip()
         self.panel.set_prompt(self.compose(subject))
         self.clear()
+
+    def enhance(self):
+        cfg = self.panel.app.cfg
+        base, mdl = cfg.get("llm_base_url", ""), cfg.get("llm_model", "")
+        if not base or not mdl:
+            messagebox.showinfo("LLM not set up", "Add your LLM server in Settings → Prompt LLM first.")
+            self.panel.app.tabs.set("Settings")
+            return
+        subject = self.panel.prompt.get("1.0", "end").strip()
+        sel = self.selections()
+        if not subject and not any(sel.values()):
+            messagebox.showinfo("Prompt", "Type an idea or pick some options first.")
+            return
+        m = self.panel.current_model()
+        tags = self.use_tags()
+        composed = compose(subject, sel, tags, self.mode)
+        key = cfg.get_key("llm")
+        self.prev_state = (subject, sel)
+        self.llm_btn.configure(state="disabled", text="Working…")
+        self.llm_status.configure(text="can take a while on phone clusters")
+        events = self.panel.app.events
+
+        def work():
+            try:
+                out, err = llm.enhance(base, key, mdl, subject, composed, (m or {}).get("name", ""), self.mode, tags), None
+            except Exception as e:  # keep UI alive
+                out, err = None, str(e)
+            events.put(("ui", lambda: self.enhance_done(out, err)))
+        threading.Thread(target=work, daemon=True).start()
+
+    def enhance_done(self, out, err):
+        self.llm_btn.configure(state="normal", text="✨ Enhance with LLM")
+        if err:
+            self.llm_status.configure(text="")
+            messagebox.showerror("LLM error", err)
+            return
+        self.panel.set_prompt(out)
+        self.clear()
+        self.undo_btn.configure(state="normal")
+        self.llm_status.configure(text="Prompt rewritten. Edit it freely.")
+
+    def undo(self):
+        if not self.prev_state:
+            return
+        subject, sel = self.prev_state
+        self.panel.set_prompt(subject)
+        for k, vals in sel.items():
+            if k in self.vars:
+                self.vars[k].set(", ".join(vals))
+        self.prev_state = None
+        self.undo_btn.configure(state="disabled")
+        self.llm_status.configure(text="")
 
     def randomize(self):
         for key, _l, _m, multi, _t in CATEGORIES:

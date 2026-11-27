@@ -70,3 +70,7 @@ Each generation tab has a collapsible **Prompt Builder** under the prompt box.
 ## Safety checker switch
 
 Open-weight models that expose a safety-checker setting (FLUX Dev/Schnell, SDXL) show a **Turn off this model's safety checker** checkbox. Hosted frontier models (Nano Banana, GPT Image, Veo, Kling, Seedance) don't offer one, and their filters always apply. Provider terms of service still apply either way.
+
+## Prompt LLM (PrivateLM, llama.cpp, LM Studio, Ollama…)
+
+In **Settings → Prompt LLM**, enter the Base URL (e.g. `http://192.168.1.74:8080/v1`), API key and model name of any OpenAI-compatible server, then **Save**. **Test / fetch model** checks the connection and fills in the model name. In the Prompt Builder, **✨ Enhance with LLM** rewrites your idea and option picks into a finished prompt tailored to the selected image/video model. **↩ Undo** restores what you had. Your computer must be on the same network as the server.

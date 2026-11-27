@@ -21,6 +21,7 @@ from PIL import Image, ImageDraw, ImageGrab
 
 from . import storage
 from .promptbuilder import PromptBuilder
+from . import llm
 from .providers import (KEY_URLS, PROVIDER_LABELS, PROVIDERS, Cancelled,
                         ProviderError, test_key)
 
@@ -692,6 +693,8 @@ class SettingsPanel(ctk.CTkScrollableFrame):
         for p in PROVIDERS:
             self.key_row(p)
 
+        self.build_llm_section()
+
         ctk.CTkLabel(self, text="Output", font=ctk.CTkFont(size=18, weight="bold")).pack(anchor="w", pady=(18, 4))
         row = ctk.CTkFrame(self, fg_color="transparent")
         row.pack(fill="x")
@@ -722,6 +725,63 @@ class SettingsPanel(ctk.CTkScrollableFrame):
 
         ctk.CTkLabel(self, text=f"GenStudio v{VERSION} · data folder: {storage.APP_DIR}", text_color="gray").pack(
             anchor="w", pady=(24, 4))
+
+    def build_llm_section(self):
+        cfg = self.app.cfg
+        ctk.CTkLabel(self, text="Prompt LLM (optional)", font=ctk.CTkFont(size=18, weight="bold")).pack(
+            anchor="w", pady=(18, 2))
+        ctk.CTkLabel(self, text="Any OpenAI-compatible server (PrivateLM, llama.cpp, LM Studio, Ollama…). Used by "
+                                "“Enhance with LLM” in the Prompt Builder to rewrite your prompt for the selected model. "
+                                "Your computer must be able to reach the address (same Wi-Fi/LAN).",
+                     text_color="gray", wraplength=800, justify="left").pack(anchor="w", pady=(0, 6))
+        f = ctk.CTkFrame(self)
+        f.pack(fill="x", pady=3)
+        f.grid_columnconfigure(1, weight=1)
+        self.llm_entries = {}
+        for i, (label, key, ph, secret) in enumerate([
+                ("Base URL", "llm_base_url", "http://192.168.1.74:8080/v1", False),
+                ("API key", "llm_key", "paste API key (leave blank if none)", True),
+                ("Model", "llm_model", "model name", False)]):
+            ctk.CTkLabel(f, text=label, width=80, anchor="w").grid(row=i, column=0, padx=10, pady=5, sticky="w")
+            e = ctk.CTkEntry(f, placeholder_text=ph, show="•" if secret else "")
+            val = cfg.get_key("llm") if key == "llm_key" else cfg.get(key, "")
+            if val:
+                e.insert(0, val)
+            e.grid(row=i, column=1, padx=(0, 8), pady=5, sticky="ew")
+            self.llm_entries[key] = e
+        btns = ctk.CTkFrame(f, fg_color="transparent")
+        btns.grid(row=3, column=1, sticky="w", pady=(2, 8))
+        self.llm_status = ctk.CTkLabel(btns, text="", wraplength=520, justify="left")
+        ctk.CTkButton(btns, text="Save", width=70, command=self.save_llm).pack(side="left")
+        ctk.CTkButton(btns, text="Test / fetch model", width=130, fg_color="gray30",
+                      command=self.test_llm).pack(side="left", padx=6)
+        self.llm_status.pack(side="left", padx=6)
+
+    def save_llm(self):
+        e = self.llm_entries
+        self.app.cfg.set("llm_base_url", e["llm_base_url"].get().strip())
+        self.app.cfg.set("llm_model", e["llm_model"].get().strip())
+        self.app.cfg.set_key("llm", e["llm_key"].get())
+        self.llm_status.configure(text="Saved.", text_color="#6cc070")
+
+    def test_llm(self):
+        e = self.llm_entries
+        base, key = e["llm_base_url"].get().strip(), e["llm_key"].get().strip()
+        self.llm_status.configure(text="Testing…", text_color="gray")
+
+        def work():
+            try:
+                models = llm.list_models(base, key)
+                def ok():
+                    if models and not e["llm_model"].get().strip():
+                        e["llm_model"].insert(0, models[0])
+                    self.llm_status.configure(text=f"Connected. Models: {', '.join(models[:5]) or 'none listed'}",
+                                              text_color="#6cc070")
+                self.app.events.put(("ui", ok))
+            except Exception as ex:
+                msg = str(ex)
+                self.app.events.put(("ui", lambda: self.llm_status.configure(text=msg, text_color="#e06c6c")))
+        threading.Thread(target=work, daemon=True).start()
 
     def key_row(self, provider):
         f = ctk.CTkFrame(self)
