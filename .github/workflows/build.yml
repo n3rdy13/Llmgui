@@ -1,0 +1,58 @@
+name: Build Windows exe
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pyinstaller
+
+      - name: Syntax check
+        run: python -m compileall -q genstudio main.py
+
+      - name: Build exe
+        run: >
+          pyinstaller --noconfirm --clean --onefile --windowed
+          --name GenStudio
+          --icon genstudio/icon.ico
+          --add-data "genstudio/models.json;genstudio"
+          --add-data "genstudio/icon.ico;genstudio"
+          --collect-all customtkinter
+          --hidden-import keyring.backends.Windows
+          main.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GenStudio-windows
+          path: dist/GenStudio.exe
+
+      - name: Publish "latest" release
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: GenStudio (latest build)
+          prerelease: true
+          make_latest: true
+          files: dist/GenStudio.exe
+          body: |
+            Automatic build from the latest commit on main.
+            Download **GenStudio.exe** below and run it. Windows SmartScreen may warn because the exe isn't code-signed: click "More info", then "Run anyway".
